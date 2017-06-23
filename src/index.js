@@ -8,13 +8,13 @@ type RefreshError = { error: string }
 type Config = {
   currentAccessToken: (state: any) => string,
   currentRefreshToken: (state: any) => string,
-  onRefreshAccessToken: (
+  handleRefreshAccessToken: (
     refreshToken: string,
     dispatch: any
   ) => Promise<Response>,
-  onAccessTokenJSON: (json: Object, store: any) => Promise<string>,
-  onAccessTokenUpdated: (accessToken: string, store: any) => void,
-  onUnauthenticatedScenario: (store: any) => void,
+  handleAccessTokenJSON: (json: Object, store: any) => Promise<string>,
+  handleAccessTokenUpdated: (accessToken: string, store: any) => void,
+  handleAuthenticationError: (error: any, store: any) => void,
   apiPayloadSymbol: string
 }
 
@@ -58,24 +58,27 @@ const middleware = (config: Config) => (store: any) => (next: any) => (
     return next(action)
   } else if (isBlank(token) || validateToken(token)) {
     return config
-      .onRefreshAccessToken(config.currentRefreshToken(state), store)
+      .handleRefreshAccessToken(config.currentRefreshToken(state), store)
       .then(res => {
         if (!res.ok) {
           throw REFRESH_ERROR
         }
         return res.json()
       })
-      .then(json => config.onAccessTokenJSON(json, store))
+      .then(json => config.handleAccessTokenJSON(json, store))
       .then(accessToken => {
         apiPayload.headers = injectToken(apiPayload.headers, accessToken)
-        config.onAccessTokenUpdated(accessToken, store)
+        config.handleAccessTokenUpdated(accessToken, store)
         return next(action)
       })
-      .catch(() => {
-        config.onUnauthenticatedScenario(store)
+      .catch((error: any): void => {
+        config.handleAuthenticationError(error, store)
       })
   } else {
     apiPayload.headers = injectToken(apiPayload.headers, token)
     return next(action)
   }
 }
+
+export { middleware, PROTECTED }
+export type { Config }

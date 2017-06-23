@@ -6,10 +6,10 @@ This middlware injects a JWT access token onto part of a qualifying action's pay
 Where this lives in your middleware stack:
 ------------------------------------------
 
-# redux-jwt-protected-middleware
-# redux-api-middleware
-# ...
-# redux-thunk
+1. redux-jwt-protected-middleware
+2. redux-api-middleware
+3. ...
+4. redux-thunk
 
 Limitations:
 ------------

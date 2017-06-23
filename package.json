@@ -1,0 +1,14 @@
+{
+  "name": "redux-jwt-protected-middleware",
+  "version": "1.0.0",
+  "description": "A redux middleware that fetches and injects a JWT to a pending fetch request.",
+  "main": "index.js",
+  "repository": "https://github.com/jimjeffers/redux-jwt-protected-middleware.git",
+  "author": "Jim Jeffers <jim@sumocreations.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1"
+  }
+}

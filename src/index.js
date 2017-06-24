@@ -6,15 +6,18 @@ import { validateToken, isDefined, isBlank } from "./helpers"
 type Headers = { [string]: string }
 type RefreshError = { error: string }
 type Config = {
-  currentAccessToken: (state: any) => string,
-  currentRefreshToken: (state: any) => string,
+  currentAccessToken: (state: ?any) => string,
+  currentRefreshToken: (state: ?any) => string,
   handleRefreshAccessToken: (
     refreshToken: string,
-    dispatch: any
+    store: ?any
   ) => Promise<Response>,
-  handleAccessTokenJSON: (json: Object, store: any) => Promise<string>,
-  handleAccessTokenUpdated: (accessToken: string, store: any) => void,
-  handleAuthenticationError: (error: any, store: any) => void,
+  handleAccessTokenJSON: (
+    json: Promise<Object>,
+    store: ?any
+  ) => Promise<string>,
+  handleAccessTokenUpdated: (accessToken: string, store: ?any) => void,
+  handleAuthenticationError: (error: any, store: ?any) => void,
   apiPayloadSymbol: string
 }
 

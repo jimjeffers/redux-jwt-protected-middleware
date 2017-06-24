@@ -18,7 +18,7 @@ type Config = {
   ) => Promise<string>,
   handleAccessTokenUpdated: (accessToken: string, store: ?any) => void,
   handleAuthenticationError: (error: any, store: ?any) => void,
-  apiPayloadSymbol: string
+  apiPayloadSymbol: Symbol
 }
 
 /**

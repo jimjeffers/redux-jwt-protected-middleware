@@ -1,5 +1,6 @@
 // @flow
 import jwtDecode from "jwt-decode"
+import type { Headers } from "./types"
 
 /**
  * A convenience method to test if a passed prop has been defined.
@@ -23,6 +24,16 @@ export const isBlank = (prop: any): boolean => !isNotBlank(prop)
  */
 export const isNotBlank = (prop: any): boolean =>
   isDefined(prop) && typeof prop === "string" && prop !== ""
+
+/**
+ * Injects a JWT in an object representing http headers as the
+ * authorization header.
+ * @param {Headers} headers   An object representing the headers for an HTTP request.
+ * @param {string} token      A JWT access token to be injected into the supplied headers.
+ * @return {Headers}          A copy of the http headers object with the Authorization header set as the JWT.
+ */
+export const injectToken = (headers: Headers, token: string): Headers =>
+  Object.assign({}, headers, { Authorization: `bearer ${token}` })
 
 /**
  * 

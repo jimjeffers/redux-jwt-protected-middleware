@@ -19,7 +19,7 @@ This middleware's job is simply to refresh the access token if needed. It's your
 Usage:
 ------
 
-```
+```js
 // @flow
 import { middleware as protectedMiddleware } from "redux-jwt-protected-middleware"
 import type { Config } from "redux-jwt-protected-middleware"

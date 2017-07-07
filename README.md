@@ -19,8 +19,11 @@ This middleware's job is simply to refresh the access token if needed. It's your
 Usage:
 ------
 
-```
+I like to configure the middleware inside of a dedicated module:
+
+```js
 // @flow
+// protectedMiddleware.js
 import { middleware as protectedMiddleware } from "redux-jwt-protected-middleware"
 import type { Config } from "redux-jwt-protected-middleware"
 import { getCookie } from "react-simple-cookie-store"
@@ -44,4 +47,28 @@ const config: Config = {
 }
 
 export default protectedMiddleware(config)
+```
+
+Then when defining my redux store:
+
+```js
+// store.js
+// @flow
+import { createStore, combineReducers, applyMiddleware, compose } from "redux"
+import protectedMiddleware from "./protectedMiddleware"
+
+...
+
+const middlewares = applyMiddleware(
+  protectedMiddleware,
+  ... // other middlewares
+)
+
+const store: Function = createStore(
+  rootReducer,
+  initialState,
+  composeEnhancers(middlewares)
+)
+
+export { store }
 ```

@@ -19,11 +19,8 @@ This middleware's job is simply to refresh the access token if needed. It's your
 Usage:
 ------
 
-<<<<<<< HEAD
 I like to configure the middleware inside of a dedicated module:
 
-=======
->>>>>>> adf0143a5d356b226a8c3705822144f4f77083c6
 ```js
 // @flow
 // protectedMiddleware.js
@@ -51,7 +48,6 @@ const config: Config = {
 
 export default protectedMiddleware(config)
 ```
-<<<<<<< HEAD
 
 Then when defining my redux store:
 
@@ -76,5 +72,3 @@ const store: Function = createStore(
 
 export { store }
 ```
-=======
->>>>>>> adf0143a5d356b226a8c3705822144f4f77083c6

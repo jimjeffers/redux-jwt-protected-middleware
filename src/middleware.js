@@ -1,6 +1,7 @@
 import { PROTECTED } from "./symbols"
 import { validateToken, isDefined, isBlank } from "./helpers"
 import type { Config } from "./types"
+import getAccessToken from "./getAccessToken"
 
 /**
  * This is a standard redux middleware that checks for a qualifying action
@@ -18,32 +19,19 @@ import type { Config } from "./types"
  * @param {Config} config The middleware configuration.
  * @return {Function}     The API middleware function
  */
-const middleware = (config: Config) => (store: any) => (next: any) => (
+const middleware = (config: Config) => 
+    (store: any) => 
+    (next: any) => async (
   action: any
 ) => {
-  const state: any = store.getState()
   const token: string = config.currentAccessToken(state)
   const isProtected: boolean = action[PROTECTED]
+  const fetchToken = getAccessToken(config)
 
   if (!isProtected) {
     return next(action)
-  } else if (isBlank(token) || !validateToken(token)) {
-    const { handleRefreshAccessToken, currentRefreshToken } = config
-    if (handleRefreshAccessToken && currentRefreshToken) {
-      return handleRefreshAccessToken(currentRefreshToken(state), store)
-        .then(_ => {
-          return next(action)
-        })
-        .catch((error: Error): void => {
-          config.handleAuthenticationError(error, store)
-        })
-    } else {
-      config.handleAuthenticationError(
-        new Error("Access token is no longer valid"),
-        store
-      )
-    }
   } else {
+    await fetchToken(store)
     return next(action)
   }
 }

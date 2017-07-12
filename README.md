@@ -72,3 +72,47 @@ const store: Function = createStore(
 
 export { store }
 ```
+
+Alternatively if you're using a library like the Apollo Client, which utilizes
+it's own middleware stack for networking, you can use the async helper function
+directly:
+
+```js
+// fetchToken.js
+// @flow
+import { getAccessToken } from "redux-jwt-protected-middleware"
+const config: Config = { ... }
+
+const fetchToken = getAccessToken(config)
+
+export default fetchToken
+```
+
+Then when defining your Apollo Client you can use the same middleware:
+
+```js
+// client.js
+import ApolloClient, { createNetworkInterface } from "react-apollo"
+import { fetchToken } from "./fetchToken"
+
+const networkInterface = createNetworkInterface({
+  uri: "http://localhost:3000"
+})
+
+networkInterface.use([
+  {
+    async applyMiddleware(req, next) {
+      if (!req.options.headers) {
+        req.options.headers = {} // Create the header object if needed.
+      }
+      const token = await fetchToken(store)
+      req.options.headers.authorization = token ? `Bearer ${token}` : null
+      next()
+    }
+  }
+])
+
+const client = new ApolloClient({ networkInterface })
+
+export default client
+```

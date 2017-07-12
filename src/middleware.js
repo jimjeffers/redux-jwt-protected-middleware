@@ -35,3 +35,5 @@ const middleware = (config: Config) =>
     return next(action)
   }
 }
+
+export default middleware

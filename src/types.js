@@ -1,9 +1,9 @@
 // @flow
 
 export type Config = {
-  currentAccessToken: (state: ?any) => string,
+  currentAccessToken: (store: ?any) => string,
   handleAuthenticationError: (error: any, store: ?any) => void,
-  currentRefreshToken: ?(state: ?any) => string,
+  currentRefreshToken: ?(store: ?any) => string,
   handleRefreshAccessToken: ?(
     refreshToken: string,
     store: ?any

@@ -93,7 +93,7 @@ Then when defining your Apollo Client you can use the same middleware:
 ```js
 // client.js
 import ApolloClient, { createNetworkInterface } from "react-apollo"
-import { fetchToken } from "./fetchToken"
+import fetchToken from "./fetchToken"
 
 const networkInterface = createNetworkInterface({
   uri: "http://localhost:3000"

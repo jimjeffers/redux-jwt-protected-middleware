@@ -24,7 +24,7 @@ const middleware = (config: Config) =>
     (next: any) => async (
   action: any
 ) => {
-  const token: string = config.currentAccessToken(state)
+  const token: string = config.currentAccessToken(store)
   const isProtected: boolean = action[PROTECTED]
   const fetchToken = getAccessToken(config)
 

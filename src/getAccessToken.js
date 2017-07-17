@@ -21,7 +21,7 @@ function* fetchToken(): Generator<string, void, ?FetchArguments> {
         currentRefreshToken
       } = config
       token = currentAccessToken(store)
-      if (isBlank(token) || !validateToken(token)) {
+      if (!isFetching && (isBlank(token) || !validateToken(token))) {
         if (handleRefreshAccessToken && currentRefreshToken) {
           isFetching = true
           try {
@@ -34,7 +34,9 @@ function* fetchToken(): Generator<string, void, ?FetchArguments> {
           isFetching = false
         } else {
           config.handleAuthenticationError(
-            new Error("Access token is no longer valid"),
+            new Error(
+              "Access token cannot be refreshed due to lack of configuration."
+            ),
             store
           )
         }

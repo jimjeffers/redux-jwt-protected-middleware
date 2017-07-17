@@ -9,3 +9,8 @@ export type Config = {
     store: ?any
   ) => Promise<string>
 }
+
+export type FetchArguments = {
+  config: Config,
+  store: any
+}

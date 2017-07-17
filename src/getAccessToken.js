@@ -24,14 +24,16 @@ function* fetchToken(): Generator<string, void, ?FetchArguments> {
       if (!isFetching && (isBlank(token) || !validateToken(token))) {
         if (handleRefreshAccessToken && currentRefreshToken) {
           isFetching = true
-          try {
-            const refreshToken = currentRefreshToken(store)
-            handleRefreshAccessToken(refreshToken, store)
-            token = currentAccessToken(store)
-          } catch (error) {
-            config.handleAuthenticationError(error, store)
-          }
-          isFetching = false
+          const refreshToken = currentRefreshToken(store)
+          handleRefreshAccessToken(refreshToken, store)
+            .then((_): void => {
+              token = currentAccessToken(store)
+              isFetching = false
+            })
+            .catch(error => {
+              config.handleAuthenticationError(error, store)
+              isFetching = false
+            })
         } else {
           config.handleAuthenticationError(
             new Error(

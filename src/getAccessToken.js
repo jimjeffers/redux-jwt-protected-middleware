@@ -23,8 +23,9 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
       } = config
       token = currentAccessToken(store)
       if (!loading && (isBlank(token) || !validateToken(token))) {
-        error = null
         if (handleRefreshAccessToken && currentRefreshToken) {
+          token = ""
+          error = null
           loading = true
           const refreshToken = currentRefreshToken(store)
           handleRefreshAccessToken(refreshToken, store)
@@ -33,7 +34,6 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
               loading = false
             })
             .catch((refreshError: Error) => {
-              config.handleAuthenticationError(error, store)
               error = refreshError
               loading = false
             })
@@ -47,7 +47,7 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
       yield {
         loading,
         error,
-        token: loading ? "" : token
+        token
       }
     }
   }

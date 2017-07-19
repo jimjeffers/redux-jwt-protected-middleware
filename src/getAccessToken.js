@@ -15,14 +15,16 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
   while (true) {
     const args = yield null
     if (args) {
-      const { config, store } = args
+      const { config, store, attempt } = args
       const {
         currentAccessToken,
         handleRefreshAccessToken,
         currentRefreshToken
       } = config
       token = currentAccessToken(store)
-      if (!loading && (isBlank(token) || !validateToken(token))) {
+      const canFetch = !loading && (attempt < 1 || !error)
+      const needsToken = isBlank(token) || !validateToken(token)
+      if (canFetch && needsToken) {
         if (handleRefreshAccessToken && currentRefreshToken) {
           token = ""
           error = null
@@ -87,7 +89,9 @@ const checkForToken = async function(
   args: FetchArguments
 ): FetchResults | Promise<?FetchResults> {
   const result = await getToken(args)
-  return result && !result.loading ? result : checkForToken(args)
+  const { attempt, ...rest } = args
+  const incrementedArgs = { ...rest, attempt: attempt + 1 }
+  return result && !result.loading ? result : checkForToken(incrementedArgs)
 }
 
 /**
@@ -102,7 +106,7 @@ const getAccessToken = (config: Config) => async (
   store: any
 ): Promise<?string> => {
   try {
-    const result = await checkForToken({ config, store })
+    const result = await checkForToken({ config, store, attempt: 0 })
     if (result && result.error) {
       throw new Error(result.error)
     }

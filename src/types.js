@@ -12,7 +12,8 @@ export type Config = {
 
 export type FetchArguments = {
   config: Config,
-  store: any
+  store: any,
+  attempt: number
 }
 
 export type FetchResults = {

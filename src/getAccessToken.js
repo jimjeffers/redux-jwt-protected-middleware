@@ -1,6 +1,6 @@
 //@flow
 import { validateToken, isDefined, isBlank } from "./helpers"
-import type { Config, FetchArguments } from "./types"
+import type { Config, FetchArguments, FetchResults } from "./types"
 
 /**
  * The crux of the middleware. This generator runs in an infinite loop
@@ -8,11 +8,12 @@ import type { Config, FetchArguments } from "./types"
  * to the next() iterator function. It will update it's internal state and
  * yeild a blank ("") string if it is currently fetching a new token.
  */
-function* fetchToken(): Generator<string, void, ?FetchArguments> {
-  var isFetching: boolean = false
+function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
+  var loading: boolean = false
   var token: string = ""
+  var error: ?Error = null
   while (true) {
-    const args = yield ""
+    const args = yield null
     if (args) {
       const { config, store } = args
       const {
@@ -21,29 +22,33 @@ function* fetchToken(): Generator<string, void, ?FetchArguments> {
         currentRefreshToken
       } = config
       token = currentAccessToken(store)
-      if (!isFetching && (isBlank(token) || !validateToken(token))) {
+      if (!loading && (isBlank(token) || !validateToken(token))) {
+        error = null
         if (handleRefreshAccessToken && currentRefreshToken) {
-          isFetching = true
+          loading = true
           const refreshToken = currentRefreshToken(store)
           handleRefreshAccessToken(refreshToken, store)
             .then((_): void => {
               token = currentAccessToken(store)
-              isFetching = false
+              loading = false
             })
-            .catch(error => {
+            .catch((refreshError: Error) => {
               config.handleAuthenticationError(error, store)
-              isFetching = false
+              error = refreshError
+              loading = false
             })
         } else {
-          config.handleAuthenticationError(
-            new Error(
-              "Access token cannot be refreshed due to lack of configuration."
-            ),
-            store
+          error = new Error(
+            "Access token cannot be refreshed due to lack of configuration."
           )
+          loading = false
         }
       }
-      yield isFetching ? "" : token
+      yield {
+        loading,
+        error,
+        token: loading ? "" : token
+      }
     }
   }
 }
@@ -61,11 +66,11 @@ gen.next() // Ensure the generator is now yielding.
  * @param {FetchArguments} args The optional redux store and middleware configuration.
  * @returns {string} A token value once a value has been obtained.
  */
-function getToken(args: FetchArguments): Promise<?string> {
+function getToken(args: FetchArguments): Promise<?FetchResults> {
   return new Promise((resolve, reject) => {
-    const token = gen.next(args).value
-    if (token !== "") {
-      resolve(token)
+    const result = gen.next(args).value
+    if (result && result.loading == false) {
+      resolve(result)
     } else {
       setTimeout(() => resolve(gen.next(args).value), 100)
     }
@@ -80,9 +85,9 @@ function getToken(args: FetchArguments): Promise<?string> {
  */
 const checkForToken = async function(
   args: FetchArguments
-): string | Promise<?string> {
-  const token = await getToken(args)
-  return !isBlank(token) ? token : checkForToken(args)
+): FetchResults | Promise<?FetchResults> {
+  const result = await getToken(args)
+  return result && !result.loading ? result : checkForToken(args)
 }
 
 /**
@@ -93,8 +98,19 @@ const checkForToken = async function(
  * @param {Config} config The middleware configuration.
  * @return {Function}     An async function that returns an accessible access token.
  */
-const getAccessToken = (config: Config) => async (store: any) => {
-  return await checkForToken({ config, store })
+const getAccessToken = (config: Config) => async (
+  store: any
+): Promise<?string> => {
+  try {
+    const result = await checkForToken({ config, store })
+    if (result && result.error) {
+      throw new Error(result.error)
+    }
+    return result ? result.token : null
+  } catch (error) {
+    config.handleAuthenticationError(error, store)
+    return null
+  }
 }
 
 export default getAccessToken

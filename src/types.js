@@ -14,3 +14,9 @@ export type FetchArguments = {
   config: Config,
   store: any
 }
+
+export type FetchResults = {
+  token: string,
+  loading: boolean,
+  error: ?Error
+}

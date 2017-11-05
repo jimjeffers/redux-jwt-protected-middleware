@@ -22,8 +22,27 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
         currentRefreshToken
       } = config
       token = currentAccessToken(store)
-      const canFetch = !loading && (attempt < 1 || !error)
+
+      /** 
+       * Prevent an infinite loop that could occur when the 
+       * generator encounters an error for a prior token. If
+       * the generator no longer needs a new token, we can
+       * assume the error was generated for a prior token.
+       */
       const needsToken = isBlank(token) || !validateToken(token)
+      if (!needsToken) {
+        error = null
+      }
+
+      /**
+       * Prevent any race conditions by tracking the current 
+       * internal state in the generator -- if a request is
+       * currently loading, an error is present, or if the
+       * incoming request for a token is from a subsequent
+       * attempt via another asynchronous API call.
+       */
+      const canFetch = !loading && (attempt < 1 || !error)
+
       if (canFetch && needsToken) {
         if (handleRefreshAccessToken && currentRefreshToken) {
           token = ""

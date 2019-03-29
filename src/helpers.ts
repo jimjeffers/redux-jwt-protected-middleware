@@ -25,15 +25,15 @@ export const isNotBlank = (prop: any): boolean =>
   isDefined(prop) && typeof prop === "string" && prop !== ""
 
 /**
- * 
+ *
  * @param {string} token A JWT to validate.
  * @param {number} leeway A pessimistic amount of seconds to invalidate the token. (defaults to 10)
  */
-export const validateToken = (token: string, leeway: ?number): boolean => {
+export const validateToken = (token: string, leeway?: number): boolean => {
   if (isBlank(token)) {
     return false
   }
-  const currentToken = jwtDecode(token)
+  const currentToken = jwtDecode(token) as any
   const { exp } = currentToken
   const now = new Date().getTime() / 1000
   const secondsRemaining = exp - now

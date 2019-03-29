@@ -1,17 +1,18 @@
-//@flow
-import { validateToken, isDefined, isBlank } from "./helpers"
-import type { Config, FetchArguments, FetchResults } from "./types"
+import { isBlank, validateToken } from "./helpers"
+import { IConfig, IFetchArguments, IFetchResults } from "./types"
 
 /**
  * The crux of the middleware. This generator runs in an infinite loop
  * and obtains our middleware configuration and store via the params passed
  * to the next() iterator function. It will update it's internal state and
  * yeild a blank ("") string if it is currently fetching a new token.
+ * Note: This is not thread safe and intended only for use in the browser.
  */
-function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
-  var loading: boolean = false
-  var token: string = ""
-  var error: ?Error = null
+function* fetchToken(): IterableIterator<IFetchResults | null> {
+  let loading: boolean = false
+  let token: string = ""
+  let error: Error | null = null
+
   while (true) {
     const args = yield null
     if (args) {
@@ -22,9 +23,8 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
         currentRefreshToken
       } = config
       token = currentAccessToken(store)
-
-      /** 
-       * Prevent an infinite loop that could occur when the 
+      /**
+       * Prevent an infinite loop that could occur when the
        * generator encounters an error for a prior token. If
        * the generator no longer needs a new token, we can
        * assume the error was generated for a prior token.
@@ -35,7 +35,7 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
       }
 
       /**
-       * Prevent any race conditions by tracking the current 
+       * Prevent any race conditions by tracking the current
        * internal state in the generator -- if a request is
        * currently loading, an error is present, or if the
        * incoming request for a token is from a subsequent
@@ -50,10 +50,12 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
           loading = true
           const refreshToken = currentRefreshToken(store)
           handleRefreshAccessToken(refreshToken, store)
-            .then((_): void => {
-              token = currentAccessToken(store)
-              loading = false
-            })
+            .then(
+              (): void => {
+                token = currentAccessToken(store)
+                loading = false
+              }
+            )
             .catch((refreshError: Error) => {
               error = refreshError
               loading = false
@@ -66,8 +68,8 @@ function* fetchToken(): Generator<?FetchResults, void, ?FetchArguments> {
         }
       }
       yield {
-        loading,
         error,
+        loading,
         token
       }
     }
@@ -87,10 +89,10 @@ gen.next() // Ensure the generator is now yielding.
  * @param {FetchArguments} args The optional redux store and middleware configuration.
  * @returns {string} A token value once a value has been obtained.
  */
-function getToken(args: FetchArguments): Promise<?FetchResults> {
-  return new Promise((resolve, reject) => {
+function getToken(args: IFetchArguments): Promise<IFetchResults | null> {
+  return new Promise(resolve => {
     const result = gen.next(args).value
-    if (result && result.loading == false) {
+    if (result && result.loading === false) {
       resolve(result)
     } else {
       setTimeout(() => resolve(gen.next(args).value), 100)
@@ -104,9 +106,9 @@ function getToken(args: FetchArguments): Promise<?FetchResults> {
  * @param {FetchArguments} args The optional redux store and middleware configuration.
  * @returns {string} A token value once a value has been obtained.
  */
-const checkForToken = async function(
-  args: FetchArguments
-): FetchResults | Promise<?FetchResults> {
+const checkForToken = async (
+  args: IFetchArguments
+): Promise<IFetchResults | null | undefined> => {
   const result = await getToken(args)
   const { attempt, ...rest } = args
   const incrementedArgs = { ...rest, attempt: attempt + 1 }
@@ -118,16 +120,16 @@ const checkForToken = async function(
  * to the middleware. This is useful if you want to replicate the behavior
  * in a different middleware stack (such as the ApolloClient's networkInterface).
  *
- * @param {Config} config The middleware configuration.
+ * @param {IConfig} config The middleware configuration.
  * @return {Function}     An async function that returns an accessible access token.
  */
-const getAccessToken = (config: Config) => async (
+const getAccessToken = (config: IConfig) => async (
   store: any
-): Promise<?string> => {
+): Promise<string | null | undefined> => {
   try {
     const result = await checkForToken({ config, store, attempt: 0 })
     if (result && result.error) {
-      throw new Error(result.error)
+      throw new Error(result.error.message)
     }
     return result ? result.token : null
   } catch (error) {

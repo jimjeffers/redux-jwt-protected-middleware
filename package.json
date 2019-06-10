@@ -19,7 +19,10 @@
     "ts-jest": "^23.10.5",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.17.0",
-    "typescript": "^3.2.1"
+    "typescript": "^3.2.1",
+    "sshpk": "^1.13.2",
+    "handlebars": "^4.1.2",
+    "js-yaml": "^3.13.1"
   },
   "scripts": {
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",

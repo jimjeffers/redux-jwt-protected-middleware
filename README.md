@@ -9,11 +9,13 @@ It's trivial to update a refresh token with many networking libraries. However, 
 them do not handle deadlocks. For example many of the APIs we write prevent replay attacks
 on refresh tokens. What if you're client kicks off two simultaneous requests? It's not 
 uncommon to encounter a race condition where one request kicks off a refresh process and
-automatically invalidates the other. This library gets around this by using a generator
-to create a deadlock and queues all processes awaiting the access token. This way if multiple
-requests are made only one refresh request will occur and all requests will continue 
-upon success. This library also will utilize your cached token automatically and only refresh
-your token via an async operation as needed.
+automatically invalidates the other. 
+
+This library gets around this by using a generator to create a deadlock and queues all 
+processes awaiting the access token. This way if multiple requests are made only one 
+refresh request will occur and all requests will continue upon success. This library also 
+will utilize your cached token automatically and only refresh your token via an async 
+operation as needed.
 
 
 Where this lives in your middleware stack:

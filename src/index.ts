@@ -1,5 +1,3 @@
-// @flow
-
 import getAccessToken from "./getAccessToken"
 import middleware from "./middleware"
 import { PROTECTED } from "./symbols"

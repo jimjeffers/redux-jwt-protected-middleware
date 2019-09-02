@@ -1,4 +1,3 @@
-// @flow
 import jwtDecode from "jwt-decode"
 
 /**

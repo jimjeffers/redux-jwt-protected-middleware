@@ -89,10 +89,24 @@ describe("getAccessToken", () => {
 
   describe("with out proper configuration or credentials", () => {
 
+    test("it should not return an error if the refresh token is blank when the access token is valid", async () => {
+      expect.assertions(1)
+      const fetchToken = getAccessToken({
+        ...config,
+        currentRefreshToken: () => "",
+        handleAuthenticationError: (error: any) => {
+          expect(error.message).toBe("No refresh token is present.")
+        },
+      })
+      const token = await fetchToken(mockStore)
+      expect(token).toEqual(config.currentAccessToken())
+    })
+
     test("it should return an error if the refresh token is blank", async () => {
       expect.assertions(1)
       const fetchToken = getAccessToken({
         ...config,
+        currentAccessToken: () => "",
         currentRefreshToken: () => "",
         handleAuthenticationError: (error: any) => {
           expect(error.message).toBe("No refresh token is present.")

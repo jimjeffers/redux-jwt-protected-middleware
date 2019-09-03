@@ -1,6 +1,6 @@
 {
   "name": "redux-jwt-protected-middleware",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "A redux middleware that fetches and injects a JWT to a pending fetch request.",
   "files": [
     "lib"

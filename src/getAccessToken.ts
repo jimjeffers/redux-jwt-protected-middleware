@@ -51,15 +51,13 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
         ? typeof currentRefreshToken(store) === "string" && !isBlank(currentRefreshToken(store))
         : false
 
-      if (!hasRefreshToken) {
-        loading = false
-        error = new Error(
-          "No refresh token is present."
-        )
-      } else if (canFetch && needsToken) {
-        // tslint:disable-next-line
-        console.log(handleRefreshAccessToken)
-        if (handleRefreshAccessToken) {
+      if (canFetch && needsToken) {
+        if (!hasRefreshToken) {
+          loading = false
+          error = new Error(
+            "No refresh token is present."
+          )
+        } else if (handleRefreshAccessToken) {
           const refreshToken = currentRefreshToken(store)
           token = ""
           error = null

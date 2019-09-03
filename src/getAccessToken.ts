@@ -5,7 +5,7 @@ import { IConfig, IFetchArguments, IFetchResults } from "./types"
  * The crux of the middleware. This generator runs in an infinite loop
  * and obtains our middleware configuration and store via the params passed
  * to the next() iterator function. It will update it's internal state and
- * yeild a blank ("") string if it is currently fetching a new token.
+ * yield a blank ("") string if it is currently fetching a new token.
  * Note: This is not thread safe and intended only for use in the browser.
  */
 function* fetchToken(): IterableIterator<IFetchResults | null> {
@@ -43,12 +43,27 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
        */
       const canFetch = !loading && (attempt < 1 || !error)
 
-      if (canFetch && needsToken) {
-        if (handleRefreshAccessToken && currentRefreshToken) {
+      /**
+       * Ensure we actually have a refresh token in order to
+       * perform the refresh request.
+       */
+      const hasRefreshToken = currentRefreshToken
+        ? typeof currentRefreshToken(store) === "string" && !isBlank(currentRefreshToken(store))
+        : false
+
+      if (!hasRefreshToken) {
+        loading = false
+        error = new Error(
+          "No refresh token is present."
+        )
+      } else if (canFetch && needsToken) {
+        // tslint:disable-next-line
+        console.log(handleRefreshAccessToken)
+        if (handleRefreshAccessToken) {
+          const refreshToken = currentRefreshToken(store)
           token = ""
           error = null
-          loading = true
-          const refreshToken = currentRefreshToken(store)
+          loading = hasRefreshToken
           handleRefreshAccessToken(refreshToken, store)
             .then(
               (): void => {

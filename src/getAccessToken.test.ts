@@ -45,7 +45,8 @@ describe("getAccessToken", () => {
         } else {
           resolve(json.accessToken || "")
         }
-      })
+      }),
+    maxDelay: 100
   }
 
   describe("with valid settings", () => {
@@ -88,7 +89,6 @@ describe("getAccessToken", () => {
   })
 
   describe("with out proper configuration or credentials", () => {
-
     test("it should not return an error if the refresh token is blank when the access token is valid", async () => {
       expect.assertions(1)
       const fetchToken = getAccessToken({
@@ -96,7 +96,7 @@ describe("getAccessToken", () => {
         currentRefreshToken: () => "",
         handleAuthenticationError: (error: any) => {
           expect(error.message).toBe("No refresh token is present.")
-        },
+        }
       })
       const token = await fetchToken(mockStore)
       expect(token).toEqual(config.currentAccessToken())
@@ -110,7 +110,7 @@ describe("getAccessToken", () => {
         currentRefreshToken: () => "",
         handleAuthenticationError: (error: any) => {
           expect(error.message).toBe("No refresh token is present.")
-        },
+        }
       })
       await fetchToken(mockStore)
     })
@@ -118,16 +118,17 @@ describe("getAccessToken", () => {
     test("it should return an error if the refresh token handler is not defined", async () => {
       expect.assertions(1)
       const fetchToken = getAccessToken({
-        currentAccessToken: () => '',
-        currentRefreshToken: () => 'anystring',
+        currentAccessToken: () => "",
+        currentRefreshToken: () => "anystring",
         handleAuthenticationError: (error: any) => {
-          expect(error.message).toBe("Access token cannot be refreshed due to lack of configuration.")
+          expect(error.message).toBe(
+            "Access token cannot be refreshed due to lack of configuration."
+          )
         }
       })
       await fetchToken(mockStore)
     })
   })
-
 })
 
 test("ok", () => expect(1).toBeTruthy())

@@ -21,7 +21,7 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
         currentAccessToken,
         currentRefreshToken,
         debug,
-        handleRefreshAccessToken,
+        handleRefreshAccessToken
       } = config
       token = currentAccessToken(store)
 
@@ -50,7 +50,8 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
        * perform the refresh request.
        */
       const hasRefreshToken = currentRefreshToken
-        ? typeof currentRefreshToken(store) === "string" && !isBlank(currentRefreshToken(store))
+        ? typeof currentRefreshToken(store) === "string" &&
+        !isBlank(currentRefreshToken(store))
         : false
 
       if (canFetch && needsToken) {
@@ -60,13 +61,13 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
             console.log(`Middleware could not refresh token.`)
           }
           loading = false
-          error = new Error(
-            "No refresh token is present."
-          )
+          error = new Error("No refresh token is present.")
         } else if (handleRefreshAccessToken && currentRefreshToken) {
           if (debug) {
             // tslint:disable-next-line no-console
-            console.log(`Middleware attempting to refresh token: ${currentRefreshToken}`)
+            console.log(
+              `Middleware attempting to refresh token: ${currentRefreshToken}`
+            )
           }
           const refreshToken = currentRefreshToken(store)
           token = ""
@@ -96,11 +97,13 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
       }
       if (debug) {
         // tslint:disable-next-line no-console
-        console.log(`Middleware yielded: ${JSON.stringify({
-          error,
-          loading,
-          token
-        })}`)
+        console.log(
+          `Middleware yielded: ${JSON.stringify({
+            error,
+            loading,
+            token
+          })}`
+        )
       }
       yield {
         error,
@@ -131,7 +134,8 @@ function getToken(args: IFetchArguments): Promise<IFetchResults | null> {
     if (result && result.loading === false) {
       resolve(result)
     } else {
-      const delay = Math.max(Math.ceil(Math.random() * 3 * 1000), 500)
+      const randomDelay = Math.max(Math.ceil(Math.random() * 3 * 1000), 500)
+      const delay = config.maxDelay ? Math.min(randomDelay, config.maxDelay) : randomDelay
       if (config.debug) {
         // tslint:disable-next-line no-console
         console.log(`Middleware waiting for result. Retrying in ${delay}ms`)

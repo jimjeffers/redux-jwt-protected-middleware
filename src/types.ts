@@ -7,6 +7,7 @@ export interface IConfig {
     refreshToken: string,
     store?: any
   ) => Promise<string>
+  maxDelay?: number
 }
 
 export interface IFetchArguments {

@@ -14,15 +14,17 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
   let error: Error | null = null
 
   while (true) {
-    const args = yield null
+    const args: IFetchArguments = (yield null) as any
     if (args) {
       const { config, store, attempt } = args
       const {
         currentAccessToken,
+        currentRefreshToken,
+        debug,
         handleRefreshAccessToken,
-        currentRefreshToken
       } = config
       token = currentAccessToken(store)
+
       /**
        * Prevent an infinite loop that could occur when the
        * generator encounters an error for a prior token. If
@@ -53,11 +55,19 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
 
       if (canFetch && needsToken) {
         if (!hasRefreshToken) {
+          if (debug) {
+            // tslint:disable-next-line no-console
+            console.log(`Middleware could not refresh token.`)
+          }
           loading = false
           error = new Error(
             "No refresh token is present."
           )
-        } else if (handleRefreshAccessToken) {
+        } else if (handleRefreshAccessToken && currentRefreshToken) {
+          if (debug) {
+            // tslint:disable-next-line no-console
+            console.log(`Middleware attempting to refresh token: ${currentRefreshToken}`)
+          }
           const refreshToken = currentRefreshToken(store)
           token = ""
           error = null
@@ -74,11 +84,23 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
               loading = false
             })
         } else {
+          if (debug) {
+            // tslint:disable-next-line no-console
+            console.log(`Middleware lacks configuration.`)
+          }
           error = new Error(
             "Access token cannot be refreshed due to lack of configuration."
           )
           loading = false
         }
+      }
+      if (debug) {
+        // tslint:disable-next-line no-console
+        console.log(`Middleware yielded: ${JSON.stringify({
+          error,
+          loading,
+          token
+        })}`)
       }
       yield {
         error,
@@ -103,12 +125,18 @@ gen.next() // Ensure the generator is now yielding.
  * @returns {string} A token value once a value has been obtained.
  */
 function getToken(args: IFetchArguments): Promise<IFetchResults | null> {
+  const { config } = args
   return new Promise(resolve => {
-    const result = gen.next(args).value
+    const result = gen.next(args as any).value
     if (result && result.loading === false) {
       resolve(result)
     } else {
-      setTimeout(() => resolve(gen.next(args).value), 100)
+      const delay = Math.max(Math.ceil(Math.random() * 3 * 1000), 500)
+      if (config.debug) {
+        // tslint:disable-next-line no-console
+        console.log(`Middleware waiting for result. Retrying in ${delay}ms`)
+      }
+      setTimeout(() => resolve(gen.next(args as any).value), delay)
     }
   })
 }

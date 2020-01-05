@@ -1,5 +1,6 @@
 export interface IConfig {
   currentAccessToken: (store?: any) => string
+  debug?: boolean
   handleAuthenticationError: (error: any, store?: any) => void
   currentRefreshToken?: (store?: any) => string
   handleRefreshAccessToken?: (

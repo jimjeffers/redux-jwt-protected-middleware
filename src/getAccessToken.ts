@@ -51,7 +51,7 @@ function* fetchToken(): IterableIterator<IFetchResults | null> {
        */
       const hasRefreshToken = currentRefreshToken
         ? typeof currentRefreshToken(store) === "string" &&
-        !isBlank(currentRefreshToken(store))
+          !isBlank(currentRefreshToken(store))
         : false
 
       if (canFetch && needsToken) {

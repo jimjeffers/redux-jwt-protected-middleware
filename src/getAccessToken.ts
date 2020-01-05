@@ -134,8 +134,7 @@ function getToken(args: IFetchArguments): Promise<IFetchResults | null> {
     if (result && result.loading === false) {
       resolve(result)
     } else {
-      const randomDelay = Math.max(Math.ceil(Math.random() * 3 * 1000), 500)
-      const delay = config.maxDelay ? Math.min(randomDelay, config.maxDelay) : randomDelay
+      const delay = config.maxDelay || 100
       if (config.debug) {
         // tslint:disable-next-line no-console
         console.log(`Middleware waiting for result. Retrying in ${delay}ms`)

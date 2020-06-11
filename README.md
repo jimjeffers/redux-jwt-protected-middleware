@@ -31,8 +31,8 @@ Limitations:
 
 This middleware's job is simply to refresh the access token if needed. It's your job to inject the access token as an authorization header. If the user is not authenticated the middleware will throw an error if it cannot refresh the accesstoken.
 
-Usage:
-------
+Redux Usage:
+-----------
 
 I like to configure the middleware inside of a dedicated module:
 
@@ -84,6 +84,22 @@ const store: Function = createStore(
 
 export { store }
 ```
+
+Then in your action creators, set the PROTECTED attribute to true:
+
+```ts
+import { PROTECTED } from "redux-jwt-protected-middleware"
+import * as types from "./types"
+
+export const getResource = (id: string) => ({
+  type: types.GET_RESOURCE,
+  [PROTECTED]: true,
+  endpoint: `/api/resource/${id}`,
+})
+```
+
+Apollo Client Usage:
+--------------------
 
 Alternatively if you're using a library like the Apollo Client, which utilizes
 it's own middleware stack for networking, you can use the async helper function

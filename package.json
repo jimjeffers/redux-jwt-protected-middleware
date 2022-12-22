@@ -16,7 +16,7 @@
     "handlebars": "^4.5.3",
     "jest": "^25.0.0",
     "js-yaml": "^3.13.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "prettier": "^1.15.3",
     "sshpk": "^1.13.2",
     "ts-jest": "^23.10.5",
